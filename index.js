@@ -30,7 +30,7 @@ const validateToken = async (req, res, next) => {
     }
 
     // Attach the result.rows to the req object
-    req.tokenData = result.rows;
+    req.tokenData = result.rows[0];
     // Token is authorized, continue to the next middleware or route handler
     next();
   } catch (error) {
@@ -103,21 +103,28 @@ app.get("/dean/slots", validateToken, async (req, res) => {
 
 // slot booking
 app.post("/student/booking", validateToken, async (req, res) => {
-  const { slotId } = req.body;
-  const tokenData = req.tokenData;
-  console.log(slotId, tokenData);
-  const student = tokenData.user_id;
-  const dean = "fdcf4057-ce74-4437-a454-e0f94e67f96f";
-  try {
-    const booking = await pool.query(
-      "INSERT INTO slots (booked_by, booken_for) VALUES($1, $2) WHERE slot_id = $3",
-      [student, dean, slotId]
-    );
-    res.json({status : "booked"})
-  } catch (error) {
-    console.log(error.message);
-  }
-});
+    const { slotId } = req.body;
+    const tokenData = req.tokenData;
+    const student = tokenData.user_id;
+    console.log(slotId, tokenData, student);
+    const dean = "fdcf4057-ce74-4437-a454-e0f94e67f96f";
+    try {
+      const booking = await pool.query(
+        "UPDATE slots SET booked_by = $1, booked_for = $2 WHERE slot_id = $3",
+        [student, dean, slotId]
+      );
+      
+      if (booking.rowCount === 0) {
+        return res.status(400).json({ error: "Slot is already booked or doesn't exist" });
+      }
+  
+      res.json({ status: "booked" });
+    } catch (error) {
+      console.log(error.message);
+      res.status(500).json({ error: "An error occurred" });
+    }
+  });
+  
 
 
 // to see the pending sessions
