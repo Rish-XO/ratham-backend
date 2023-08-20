@@ -127,6 +127,7 @@ app.get("/dean/pending-sessions", validateToken, async (req, res) => {
     try {
         const slots = await pool.query("SELECT * FROM slots WHERE time_over = $1 AND booked_for = $2",["false", tokenData.user_id])
         console.log(slots.rows);
+        res.json({slots: slots.rows})
     } catch (error) {
         console.log(error.message);
     }
