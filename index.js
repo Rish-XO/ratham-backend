@@ -80,7 +80,7 @@ app.post("/dean/login", async (req, res) => {
       // if user doesn't exist create new
       const user = await pool.query(
         "INSERT INTO users (college_id , password, role) VALUES ($1 , $2, $3) RETURNING *",
-        [universityId, password, dean]
+        [universityId, password, 'dean']
       );
       const token = user.rows[0].token;
       res.json({ token });
@@ -109,6 +109,7 @@ app.post("/student/booking", validateToken, async (req, res) => {
   const tokenData = req.tokenData;
   const student = tokenData.user_id;
   console.log(slotId, tokenData, student);
+  
   // consider this dean id will be sent from frontend by user
   const dean = "0b6411d2-8fab-4159-b0a2-f78773fc0c02";
   try {
